@@ -1,0 +1,1583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="theme-color" content="#FF6B00">
+<title>Dash Companion</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap');
+
+  :root {
+    --orange: #FF6B00;
+    --orange-dim: #CC5500;
+    --orange-glow: rgba(255,107,0,0.15);
+    --green: #22C55E;
+    --green-dim: #16A34A;
+    --red: #EF4444;
+    --red-dim: #DC2626;
+    --yellow: #F59E0B;
+    --bg: #0A0A0A;
+    --surface: #141414;
+    --surface2: #1E1E1E;
+    --surface3: #282828;
+    --border: #2A2A2A;
+    --text: #F0F0F0;
+    --text-dim: #888;
+    --text-muted: #555;
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    max-width: 480px;
+    margin: 0 auto;
+    padding-bottom: 80px;
+  }
+
+  /* HEADER */
+  .header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 16px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .header-brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .brand-icon {
+    width: 32px;
+    height: 32px;
+    background: var(--orange);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: 800;
+    color: white;
+    letter-spacing: -1px;
+  }
+
+  .brand-name {
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+  }
+
+  .brand-name span { color: var(--orange); }
+
+  .header-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .live-badge {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(34,197,94,0.1);
+    border: 1px solid rgba(34,197,94,0.3);
+    padding: 3px 8px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--green);
+  }
+
+  .live-dot {
+    width: 6px;
+    height: 6px;
+    background: var(--green);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  .store-tag {
+    font-size: 11px;
+    color: var(--text-dim);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* STATS BAR */
+  .stats-bar {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .stat-cell {
+    background: var(--surface);
+    padding: 10px 6px;
+    text-align: center;
+  }
+
+  .stat-val {
+    font-size: 20px;
+    font-weight: 800;
+    font-family: 'JetBrains Mono', monospace;
+    line-height: 1;
+  }
+
+  .stat-label {
+    font-size: 9px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 2px;
+  }
+
+  .stat-val.orange { color: var(--orange); }
+  .stat-val.green { color: var(--green); }
+  .stat-val.red { color: var(--red); }
+  .stat-val.yellow { color: var(--yellow); }
+
+  /* NAV TABS */
+  .nav-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .nav-tabs::-webkit-scrollbar { display: none; }
+
+  .tab {
+    flex: 1;
+    min-width: 70px;
+    padding: 10px 4px;
+    text-align: center;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+
+  .tab.active {
+    color: var(--orange);
+    border-bottom-color: var(--orange);
+  }
+
+  .tab-icon { font-size: 15px; display: block; margin-bottom: 2px; }
+
+  .tab-badge {
+    display: inline-block;
+    background: var(--red);
+    color: white;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 1px 5px;
+    border-radius: 10px;
+    margin-left: 3px;
+  }
+
+  /* VIEWS */
+  .view { display: none; padding: 12px 12px; }
+  .view.active { display: block; }
+
+  /* SECTION HEADER */
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+
+  .section-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+  }
+
+  .btn-sm {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .btn-orange { background: var(--orange); color: white; }
+  .btn-orange:active { background: var(--orange-dim); }
+  .btn-ghost { background: var(--surface3); color: var(--text-dim); }
+
+  /* ORDER CARDS */
+  .order-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 10px;
+    overflow: hidden;
+    transition: all 0.2s;
+  }
+
+  .order-card.urgent { border-color: var(--red); }
+  .order-card.ready { border-color: var(--green); }
+  .order-card.new { border-color: var(--orange); }
+
+  .order-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px 8px;
+  }
+
+  .order-id {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--orange);
+  }
+
+  .order-timer {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 6px;
+    background: var(--surface3);
+  }
+
+  .order-timer.urgent { background: rgba(239,68,68,0.15); color: var(--red); }
+  .order-timer.ok { color: var(--text-dim); }
+
+  .order-customer {
+    padding: 0 12px 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .customer-name {
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .order-value {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--green);
+  }
+
+  .order-items {
+    padding: 8px 12px;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    background: var(--surface2);
+  }
+
+  .order-item-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px 0;
+    font-size: 13px;
+  }
+
+  .item-name { color: var(--text); }
+  .item-qty {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    background: var(--surface3);
+    padding: 1px 6px;
+    border-radius: 4px;
+  }
+
+  .item-sub-btn {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--yellow);
+    background: rgba(245,158,11,0.1);
+    border: 1px solid rgba(245,158,11,0.3);
+    padding: 2px 7px;
+    border-radius: 5px;
+    cursor: pointer;
+    border-style: solid;
+  }
+
+  .item-out {
+    text-decoration: line-through;
+    color: var(--text-muted);
+  }
+
+  .item-out-tag {
+    font-size: 10px;
+    color: var(--red);
+    background: rgba(239,68,68,0.1);
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-weight: 600;
+  }
+
+  .order-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1px;
+    background: var(--border);
+  }
+
+  .order-action-btn {
+    padding: 9px 4px;
+    text-align: center;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    background: var(--surface);
+    border: none;
+    color: var(--text-dim);
+    transition: all 0.15s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+  }
+
+  .order-action-btn:active { filter: brightness(1.3); }
+  .order-action-btn .btn-icon { font-size: 14px; }
+  .order-action-btn.green { color: var(--green); }
+  .order-action-btn.red { color: var(--red); }
+  .order-action-btn.orange { color: var(--orange); }
+  .order-action-btn.blue { color: #60A5FA; }
+
+  /* STATUS BADGE */
+  .status-badge {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .status-new { background: rgba(255,107,0,0.15); color: var(--orange); }
+  .status-prep { background: rgba(245,158,11,0.15); color: var(--yellow); }
+  .status-ready { background: rgba(34,197,94,0.15); color: var(--green); }
+  .status-picked { background: rgba(96,165,250,0.15); color: #60A5FA; }
+
+  /* INVENTORY */
+  .inv-search {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+    font-size: 14px;
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    margin-bottom: 10px;
+    outline: none;
+  }
+
+  .inv-search:focus { border-color: var(--orange); }
+
+  .inv-category {
+    margin-bottom: 14px;
+  }
+
+  .inv-cat-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 6px;
+    padding: 0 2px;
+  }
+
+  .inv-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 4px;
+    transition: all 0.15s;
+  }
+
+  .inv-item.out {
+    opacity: 0.5;
+    border-color: rgba(239,68,68,0.3);
+  }
+
+  .inv-item-info { flex: 1; }
+
+  .inv-item-name {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 2px;
+  }
+
+  .inv-item-sku {
+    font-size: 10px;
+    color: var(--text-muted);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .inv-toggle {
+    width: 44px;
+    height: 24px;
+    background: var(--surface3);
+    border-radius: 12px;
+    position: relative;
+    cursor: pointer;
+    transition: background 0.2s;
+    border: none;
+    flex-shrink: 0;
+  }
+
+  .inv-toggle.on { background: var(--green); }
+  .inv-toggle.off { background: var(--red); }
+
+  .inv-toggle::after {
+    content: '';
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    background: white;
+    border-radius: 50%;
+    top: 3px;
+    left: 3px;
+    transition: transform 0.2s;
+  }
+
+  .inv-toggle.on::after { transform: translateX(20px); }
+
+  .inv-toggle-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-align: center;
+    margin-top: 2px;
+    color: var(--text-muted);
+  }
+
+  .inv-toggle-wrap { display: flex; flex-direction: column; align-items: center; }
+
+  /* MESSAGES */
+  .msg-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 10px;
+    overflow: hidden;
+  }
+
+  .msg-header {
+    padding: 10px 12px 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .msg-to {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .msg-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .msg-avatar.customer { background: rgba(96,165,250,0.2); color: #60A5FA; }
+  .msg-avatar.dasher { background: rgba(255,107,0,0.2); color: var(--orange); }
+
+  .msg-name {
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .msg-role {
+    font-size: 10px;
+    color: var(--text-muted);
+  }
+
+  .msg-order-ref {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-muted);
+    background: var(--surface3);
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+
+  .msg-thread {
+    padding: 10px 12px;
+    max-height: 120px;
+    overflow-y: auto;
+  }
+
+  .msg-bubble {
+    padding: 6px 10px;
+    border-radius: 10px;
+    font-size: 12px;
+    margin-bottom: 6px;
+    max-width: 85%;
+    line-height: 1.4;
+  }
+
+  .msg-bubble.store {
+    background: var(--orange);
+    color: white;
+    margin-left: auto;
+    border-bottom-right-radius: 3px;
+  }
+
+  .msg-bubble.them {
+    background: var(--surface3);
+    color: var(--text);
+    border-bottom-left-radius: 3px;
+  }
+
+  .msg-timestamp {
+    font-size: 9px;
+    color: var(--text-muted);
+    text-align: right;
+    margin-top: 1px;
+  }
+
+  .msg-quick-replies {
+    display: flex;
+    gap: 6px;
+    padding: 8px 12px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    border-top: 1px solid var(--border);
+  }
+
+  .msg-quick-replies::-webkit-scrollbar { display: none; }
+
+  .quick-reply {
+    flex-shrink: 0;
+    font-size: 11px;
+    font-weight: 600;
+    background: var(--surface3);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    padding: 5px 10px;
+    border-radius: 20px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s;
+  }
+
+  .quick-reply:active {
+    background: var(--orange);
+    color: white;
+    border-color: var(--orange);
+  }
+
+  .msg-input-row {
+    display: flex;
+    gap: 6px;
+    padding: 8px 12px;
+    border-top: 1px solid var(--border);
+  }
+
+  .msg-input {
+    flex: 1;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 7px 12px;
+    font-size: 12px;
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    outline: none;
+  }
+
+  .msg-input:focus { border-color: var(--orange); }
+
+  .send-btn {
+    width: 34px;
+    height: 34px;
+    background: var(--orange);
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    flex-shrink: 0;
+  }
+
+  /* ACCEPT MODAL */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.75);
+    z-index: 200;
+    align-items: flex-end;
+    justify-content: center;
+  }
+
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--surface);
+    border-radius: 20px 20px 0 0;
+    padding: 20px 16px 36px;
+    width: 100%;
+    max-width: 480px;
+    border-top: 1px solid var(--border);
+    animation: slideUp 0.25s ease;
+  }
+
+  @keyframes slideUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+  }
+
+  .modal-handle {
+    width: 36px;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    margin: 0 auto 16px;
+  }
+
+  .modal-title {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  .modal-subtitle {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 16px;
+  }
+
+  .modal-items {
+    background: var(--surface2);
+    border-radius: var(--radius-sm);
+    padding: 10px;
+    margin-bottom: 14px;
+  }
+
+  .modal-item-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 0;
+    font-size: 13px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .modal-item-row:last-child { border-bottom: none; }
+
+  .modal-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 14px;
+  }
+
+  .modal-btn {
+    padding: 13px;
+    border-radius: var(--radius-sm);
+    border: none;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+  }
+
+  .modal-btn.accept { background: var(--green); color: white; }
+  .modal-btn.reject { background: var(--surface3); color: var(--red); border: 1px solid rgba(239,68,68,0.3); }
+
+  /* SUB MODAL */
+  .sub-options {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 14px;
+  }
+
+  .sub-option {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .sub-option:active, .sub-option.selected {
+    border-color: var(--orange);
+    background: var(--orange-glow);
+  }
+
+  .sub-option-name { font-size: 13px; font-weight: 600; }
+  .sub-option-price { font-size: 12px; color: var(--text-dim); }
+
+  /* BOTTOM NAV */
+  .bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 480px;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    display: flex;
+    z-index: 100;
+  }
+
+  .nav-item {
+    flex: 1;
+    padding: 10px 4px 8px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .nav-item-icon { font-size: 20px; display: block; }
+  .nav-item-label { font-size: 9px; font-weight: 600; color: var(--text-muted); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .nav-item.active .nav-item-label { color: var(--orange); }
+
+  .nav-notif {
+    position: relative;
+    display: inline-block;
+  }
+
+  .nav-notif-dot {
+    position: absolute;
+    top: -2px;
+    right: -4px;
+    width: 8px;
+    height: 8px;
+    background: var(--red);
+    border-radius: 50%;
+    border: 2px solid var(--surface);
+  }
+
+  /* EMPTY STATE */
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-muted);
+  }
+
+  .empty-icon { font-size: 40px; margin-bottom: 10px; }
+  .empty-title { font-size: 15px; font-weight: 600; color: var(--text-dim); margin-bottom: 4px; }
+  .empty-sub { font-size: 13px; }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    top: 70px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-20px);
+    background: var(--surface3);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    z-index: 300;
+    opacity: 0;
+    transition: all 0.25s;
+    white-space: nowrap;
+    pointer-events: none;
+  }
+
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  .toast.green { border-color: var(--green); color: var(--green); }
+  .toast.orange { border-color: var(--orange); color: var(--orange); }
+  .toast.red { border-color: var(--red); color: var(--red); }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-brand">
+    <div class="brand-icon">7</div>
+    <div class="brand-name">Dash <span>Companion</span></div>
+  </div>
+  <div class="header-meta">
+    <span class="store-tag">#34721</span>
+    <div class="live-badge"><div class="live-dot"></div>LIVE</div>
+  </div>
+</div>
+
+<!-- STATS BAR -->
+<div class="stats-bar">
+  <div class="stat-cell">
+    <div class="stat-val orange" id="stat-active">3</div>
+    <div class="stat-label">Active</div>
+  </div>
+  <div class="stat-cell">
+    <div class="stat-val yellow" id="stat-pending">1</div>
+    <div class="stat-label">Pending</div>
+  </div>
+  <div class="stat-cell">
+    <div class="stat-val green" id="stat-done">12</div>
+    <div class="stat-label">Done</div>
+  </div>
+  <div class="stat-cell">
+    <div class="stat-val red" id="stat-out">4</div>
+    <div class="stat-label">Out of Stock</div>
+  </div>
+</div>
+
+<!-- NAV TABS -->
+<div class="nav-tabs">
+  <div class="tab active" onclick="switchTab('orders')" id="tab-orders">
+    <span class="tab-icon">📋</span>ORDERS<span class="tab-badge" id="orders-badge">3</span>
+  </div>
+  <div class="tab" onclick="switchTab('inventory')" id="tab-inventory">
+    <span class="tab-icon">📦</span>INVENTORY
+  </div>
+  <div class="tab" onclick="switchTab('messages')" id="tab-messages">
+    <span class="tab-icon">💬</span>MESSAGES<span class="tab-badge" id="msgs-badge">2</span>
+  </div>
+  <div class="tab" onclick="switchTab('history')" id="tab-history">
+    <span class="tab-icon">📈</span>HISTORY
+  </div>
+</div>
+
+<!-- ===== ORDERS VIEW ===== -->
+<div class="view active" id="view-orders">
+
+  <div class="section-header" style="margin-top:4px">
+    <span class="section-title">Incoming Orders</span>
+    <button class="btn-sm btn-ghost" onclick="showToast('Refreshed', 'green')">↻ Refresh</button>
+  </div>
+
+  <!-- NEW ORDER -->
+  <div class="order-card new" id="order-1001">
+    <div class="order-header">
+      <div>
+        <div class="order-id">#DD-1001</div>
+        <span class="status-badge status-new">New Order</span>
+      </div>
+      <div class="order-timer urgent" id="timer-1001">4:32</div>
+    </div>
+    <div class="order-customer">
+      <div class="customer-name">Marcus T.</div>
+      <div class="order-value">$18.47</div>
+    </div>
+    <div class="order-items">
+      <div class="order-item-row">
+        <span class="item-name">Big Bite Hot Dog</span>
+        <span class="item-qty">x2</span>
+      </div>
+      <div class="order-item-row">
+        <span class="item-name">Slurpee 32oz — Cherry</span>
+        <span class="item-qty">x1</span>
+      </div>
+      <div class="order-item-row">
+        <span class="item-name">Doritos Nacho Cheese</span>
+        <span class="item-qty">x1</span>
+      </div>
+    </div>
+    <div class="order-actions">
+      <button class="order-action-btn green" onclick="acceptOrder('1001')">
+        <span class="btn-icon">✓</span>Accept
+      </button>
+      <button class="order-action-btn red" onclick="rejectOrder('1001')">
+        <span class="btn-icon">✕</span>Reject
+      </button>
+      <button class="order-action-btn orange" onclick="openSubModal('1001')">
+        <span class="btn-icon">⇄</span>Sub Item
+      </button>
+    </div>
+  </div>
+
+  <!-- IN PREP -->
+  <div class="order-card" id="order-1002">
+    <div class="order-header">
+      <div>
+        <div class="order-id">#DD-1002</div>
+        <span class="status-badge status-prep">Preparing</span>
+      </div>
+      <div class="order-timer ok" id="timer-1002">8:15</div>
+    </div>
+    <div class="order-customer">
+      <div class="customer-name">Aaliyah R.</div>
+      <div class="order-value">$11.22</div>
+    </div>
+    <div class="order-items">
+      <div class="order-item-row">
+        <span class="item-name item-out">Monster Energy — Green</span>
+        <span class="item-out-tag">OUT</span>
+      </div>
+      <div class="order-item-row">
+        <span class="item-name" style="color:var(--yellow)">→ Monster Ultra White</span>
+        <span class="item-qty" style="color:var(--yellow)">SUB</span>
+      </div>
+      <div class="order-item-row">
+        <span class="item-name">Pringles Original</span>
+        <span class="item-qty">x1</span>
+      </div>
+    </div>
+    <div class="order-actions">
+      <button class="order-action-btn green" onclick="markReady('1002')">
+        <span class="btn-icon">✓</span>Ready
+      </button>
+      <button class="order-action-btn blue" onclick="msgCustomer('Aaliyah R.', '1002')">
+        <span class="btn-icon">💬</span>Message
+      </button>
+      <button class="order-action-btn orange" onclick="msgDasher('1002')">
+        <span class="btn-icon">🛵</span>Dasher
+      </button>
+    </div>
+  </div>
+
+  <!-- READY -->
+  <div class="order-card ready" id="order-1003">
+    <div class="order-header">
+      <div>
+        <div class="order-id">#DD-1003</div>
+        <span class="status-badge status-ready">Ready for Pickup</span>
+      </div>
+      <div class="order-timer ok">2:05</div>
+    </div>
+    <div class="order-customer">
+      <div class="customer-name">James K.</div>
+      <div class="order-value">$24.88</div>
+    </div>
+    <div class="order-items">
+      <div class="order-item-row">
+        <span class="item-name">Redbull 8.4oz</span>
+        <span class="item-qty">x3</span>
+      </div>
+      <div class="order-item-row">
+        <span class="item-name">Marlboro Gold Pack</span>
+        <span class="item-qty">x1</span>
+      </div>
+    </div>
+    <div class="order-actions">
+      <button class="order-action-btn blue" onclick="showToast('Dasher ETA: 3 min', 'orange')">
+        <span class="btn-icon">🛵</span>ETA
+      </button>
+      <button class="order-action-btn blue" onclick="msgCustomer('James K.', '1003')">
+        <span class="btn-icon">💬</span>Message
+      </button>
+      <button class="order-action-btn green" onclick="completeOrder('1003')">
+        <span class="btn-icon">📦</span>Picked Up
+      </button>
+    </div>
+  </div>
+
+</div>
+
+<!-- ===== INVENTORY VIEW ===== -->
+<div class="view" id="view-inventory">
+
+  <input type="text" class="inv-search" placeholder="🔍  Search items..." id="inv-search-input" oninput="filterInventory(this.value)">
+
+  <div id="inventory-list">
+
+    <div class="inv-category" data-cat="drinks">
+      <div class="inv-cat-label">Drinks</div>
+
+      <div class="inv-item" data-name="monster energy green">
+        <div class="inv-item-info">
+          <div class="inv-item-name">Monster Energy — Green</div>
+          <div class="inv-item-sku">SKU-00412</div>
+        </div>
+        <div class="inv-toggle-wrap">
+          <div class="inv-toggle off" onclick="toggleItem(this)"></div>
+          <div class="inv-toggle-label">OUT</div>
+        </div>
+      </div>
+
+      <div class="inv-item" data-name="monster ultra white">
+        <div class="inv-item-info">
+          <div class="inv-item-name">Monster Ultra White</div>
+          <div class="inv-item-sku">SKU-00413</div>
+        </div>
+        <div class="inv-toggle-wrap">
+          <div class="inv-toggle on" onclick="toggleItem(this)"></div>
+          <div class="inv-toggle-label">IN</div>
+        </div>
+      </div>
+
+      <div class="inv-item" data-name="slurpee 32oz cherry">
+        <div class="inv-item-info">
+          <div class="inv-item-name">Slurpee 32oz — Cherry</div>
+          <div class="inv-item-sku">SKU-00201</div>
+        </div>
+        <div class="inv-toggle-wrap">
+          <div class="inv-toggle on" onclick="toggleItem(this)"></div>
+          <div class="inv-toggle-label">IN</div>
+        </div>
+      </div>
+
+      <div class="inv-item" data-name="redbull 8.4oz">
+        <div class="inv-item-info">
+          <div class="inv-item-name">Redbull 8.4oz</div>
+          <div class="inv-item-sku">SKU-00308</div>
+        </div>
+        <div class="inv-toggle-wrap">
+          <div class="inv-toggle on" onclick="toggleItem(this)"></div>
+          <div class="inv-toggle-label">IN</div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="inv-category" data-cat="food">
+      <div class="inv-cat-label">Hot Foods</div>
+
+      <div class="inv-item" data-name="big bite hot dog">
+        <div class="inv-item-info">
+          <div class="inv-item-name">Big Bite Hot Dog</div>
+          <div class="inv-item-sku">SKU-00101</div>
+        </div>
+        <div class="inv-toggle-wrap">
+          <div class="inv-toggle on" onclick="toggleItem(this)"></div>
+          <div class="inv-toggle-label">IN</div>
+        </div>
+      </div>
+
+      <div class="inv-item out" data-name="taquito chicken">
+        <div class="inv-item-info">
+          <div class="inv-item-name">Taquito — Chicken</div>
+          <div class="inv-item-sku">SKU-00115</div>
+        </div>
+        <div class="inv-toggle-wrap">
+          <div class="inv-toggle off" onclick="toggleItem(this)"></div>
+          <div class="inv-toggle-label">OUT</div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="inv-category" data-cat="snacks">
+      <div class="inv-cat-label">Snacks</div>
+
+      <div class="inv-item" data-name="doritos nacho cheese">
+        <div class="inv-item-info">
+          <div class="inv-item-name">Doritos Nacho Cheese</div>
+          <div class="inv-item-sku">SKU-00521</div>
+        </div>
+        <div class="inv-toggle-wrap">
+          <div class="inv-toggle on" onclick="toggleItem(this)"></div>
+          <div class="inv-toggle-label">IN</div>
+        </div>
+      </div>
+
+      <div class="inv-item out" data-name="pringles original">
+        <div class="inv-item-info">
+          <div class="inv-item-name">Pringles Original</div>
+          <div class="inv-item-sku">SKU-00534</div>
+        </div>
+        <div class="inv-toggle-wrap">
+          <div class="inv-toggle off" onclick="toggleItem(this)"></div>
+          <div class="inv-toggle-label">OUT</div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="inv-category" data-cat="tobacco">
+      <div class="inv-cat-label">Tobacco</div>
+
+      <div class="inv-item" data-name="marlboro gold">
+        <div class="inv-item-info">
+          <div class="inv-item-name">Marlboro Gold Pack</div>
+          <div class="inv-item-sku">SKU-00701</div>
+        </div>
+        <div class="inv-toggle-wrap">
+          <div class="inv-toggle on" onclick="toggleItem(this)"></div>
+          <div class="inv-toggle-label">IN</div>
+        </div>
+      </div>
+
+      <div class="inv-item out" data-name="camel blue">
+        <div class="inv-item-info">
+          <div class="inv-item-name">Camel Blue Pack</div>
+          <div class="inv-item-sku">SKU-00714</div>
+        </div>
+        <div class="inv-toggle-wrap">
+          <div class="inv-toggle off" onclick="toggleItem(this)"></div>
+          <div class="inv-toggle-label">OUT</div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+<!-- ===== MESSAGES VIEW ===== -->
+<div class="view" id="view-messages">
+
+  <div class="section-header" style="margin-top:4px">
+    <span class="section-title">Active Threads</span>
+  </div>
+
+  <!-- Customer thread -->
+  <div class="msg-card">
+    <div class="msg-header">
+      <div class="msg-to">
+        <div class="msg-avatar customer">M</div>
+        <div>
+          <div class="msg-name">Marcus T.</div>
+          <div class="msg-role">Customer</div>
+        </div>
+      </div>
+      <div class="msg-order-ref">#DD-1001</div>
+    </div>
+    <div class="msg-thread" id="thread-customer-1001">
+      <div class="msg-bubble them">Is the Cherry Slurpee actually available? App showed it but last time it was out</div>
+      <div class="msg-timestamp">2 min ago</div>
+      <div class="msg-bubble store">Yes we just refilled it, you're good 👍</div>
+      <div class="msg-timestamp">just now</div>
+    </div>
+    <div class="msg-quick-replies">
+      <div class="quick-reply" onclick="quickSend('customer-1001', 'Your order is ready! 🎉')">Order ready!</div>
+      <div class="quick-reply" onclick="quickSend('customer-1001', 'We made a substitution on one item, check your order.')">Sub made</div>
+      <div class="quick-reply" onclick="quickSend('customer-1001', 'Dasher is on the way.')">Dasher coming</div>
+      <div class="quick-reply" onclick="quickSend('customer-1001', 'Running about 3 more minutes.')">3 more min</div>
+    </div>
+    <div class="msg-input-row">
+      <input type="text" class="msg-input" placeholder="Message customer..." id="input-customer-1001">
+      <button class="send-btn" onclick="sendMsg('customer-1001')">↑</button>
+    </div>
+  </div>
+
+  <!-- Dasher thread -->
+  <div class="msg-card">
+    <div class="msg-header">
+      <div class="msg-to">
+        <div class="msg-avatar dasher">D</div>
+        <div>
+          <div class="msg-name">Dasher #8821</div>
+          <div class="msg-role">Driver</div>
+        </div>
+      </div>
+      <div class="msg-order-ref">#DD-1003</div>
+    </div>
+    <div class="msg-thread" id="thread-dasher-1003">
+      <div class="msg-bubble store">Order is bagged and at the counter. Look for the orange sticker.</div>
+      <div class="msg-timestamp">5 min ago</div>
+      <div class="msg-bubble them">On my way, 4 min out</div>
+      <div class="msg-timestamp">1 min ago</div>
+    </div>
+    <div class="msg-quick-replies">
+      <div class="quick-reply" onclick="quickSend('dasher-1003', 'Order is bagged and ready at the counter.')">At counter</div>
+      <div class="quick-reply" onclick="quickSend('dasher-1003', 'Look for the orange sticker on the bag.')">Orange sticker</div>
+      <div class="quick-reply" onclick="quickSend('dasher-1003', 'Almost done prepping, 2 more minutes.')">2 more min</div>
+    </div>
+    <div class="msg-input-row">
+      <input type="text" class="msg-input" placeholder="Message dasher..." id="input-dasher-1003">
+      <button class="send-btn" onclick="sendMsg('dasher-1003')">↑</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- ===== HISTORY VIEW ===== -->
+<div class="view" id="view-history">
+  <div class="section-header" style="margin-top:4px">
+    <span class="section-title">Today — Jun 17</span>
+    <span style="font-size:12px; font-weight:700; color:var(--green)">$287.40</span>
+  </div>
+
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:14px;">
+    <div style="background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-sm); padding:12px; text-align:center;">
+      <div style="font-size:24px; font-weight:800; font-family:'JetBrains Mono',monospace; color:var(--green)">12</div>
+      <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">Completed</div>
+    </div>
+    <div style="background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-sm); padding:12px; text-align:center;">
+      <div style="font-size:24px; font-weight:800; font-family:'JetBrains Mono',monospace; color:var(--yellow)">3</div>
+      <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">Substitutions</div>
+    </div>
+    <div style="background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-sm); padding:12px; text-align:center;">
+      <div style="font-size:24px; font-weight:800; font-family:'JetBrains Mono',monospace; color:var(--red)">1</div>
+      <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">Cancelled</div>
+    </div>
+    <div style="background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-sm); padding:12px; text-align:center;">
+      <div style="font-size:24px; font-weight:800; font-family:'JetBrains Mono',monospace; color:var(--orange)">6:42</div>
+      <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">Avg Prep Time</div>
+    </div>
+  </div>
+
+  <div class="section-header">
+    <span class="section-title">Completed Orders</span>
+  </div>
+
+  <div id="history-list">
+    <div style="background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-sm); padding:10px 12px; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center;">
+      <div>
+        <div style="font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--text-dim)">#DD-0998</div>
+        <div style="font-size:13px; font-weight:600; margin-top:1px;">Sarah M.</div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:13px; font-weight:700; color:var(--green)">$22.10</div>
+        <div style="font-size:10px; color:var(--text-muted)">11:34 AM · 5:21 prep</div>
+      </div>
+    </div>
+    <div style="background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-sm); padding:10px 12px; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center;">
+      <div>
+        <div style="font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--text-dim)">#DD-0997</div>
+        <div style="font-size:13px; font-weight:600; margin-top:1px;">Devon W.</div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:13px; font-weight:700; color:var(--green)">$15.60</div>
+        <div style="font-size:10px; color:var(--text-muted)">11:18 AM · 7:44 prep</div>
+      </div>
+    </div>
+    <div style="background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-sm); padding:10px 12px; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center;">
+      <div>
+        <div style="font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--text-dim)">#DD-0996</div>
+        <div style="font-size:13px; font-weight:600; margin-top:1px;">Keisha B.</div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:13px; font-weight:700; color:var(--yellow)">$9.35 · SUB</div>
+        <div style="font-size:10px; color:var(--text-muted)">10:52 AM · 6:10 prep</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== ACCEPT MODAL ===== -->
+<div class="modal-overlay" id="accept-modal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">New Order — #DD-<span id="modal-order-id"></span></div>
+    <div class="modal-subtitle">Accept this order? You have 90 seconds.</div>
+    <div class="modal-items" id="modal-items-list"></div>
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <span style="font-size:12px; color:var(--text-muted)">Est. prep time</span>
+      <span style="font-size:14px; font-weight:700; font-family:'JetBrains Mono',monospace; color:var(--orange)">~6 min</span>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn reject" onclick="closeModal('accept-modal')">Reject</button>
+      <button class="modal-btn accept" onclick="confirmAccept()">Accept Order</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SUB MODAL ===== -->
+<div class="modal-overlay" id="sub-modal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Suggest Substitution</div>
+    <div class="modal-subtitle">Customer will be notified to approve or reject</div>
+    <div style="background:var(--surface2); border-radius:var(--radius-sm); padding:10px 12px; margin-bottom:12px;">
+      <div style="font-size:11px; color:var(--text-muted); margin-bottom:4px;">REPLACING</div>
+      <div style="font-size:14px; font-weight:600; text-decoration:line-through; color:var(--text-muted)">Monster Energy — Green</div>
+    </div>
+    <div style="font-size:11px; color:var(--text-muted); margin-bottom:8px; text-transform:uppercase; letter-spacing:0.5px;">Choose substitute</div>
+    <div class="sub-options">
+      <div class="sub-option" onclick="selectSub(this, 'Monster Ultra White')">
+        <div>
+          <div class="sub-option-name">Monster Ultra White</div>
+          <div class="sub-option-price">Same price</div>
+        </div>
+        <div style="font-size:18px;">⚡</div>
+      </div>
+      <div class="sub-option" onclick="selectSub(this, 'Monster Zero Ultra')">
+        <div>
+          <div class="sub-option-name">Monster Zero Ultra</div>
+          <div class="sub-option-price">Same price</div>
+        </div>
+        <div style="font-size:18px;">⚡</div>
+      </div>
+      <div class="sub-option" onclick="selectSub(this, 'Redbull 8.4oz')">
+        <div>
+          <div class="sub-option-name">Redbull 8.4oz</div>
+          <div class="sub-option-price">+$0.50</div>
+        </div>
+        <div style="font-size:18px;">🐂</div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn reject" onclick="closeModal('sub-modal')">Cancel</button>
+      <button class="modal-btn accept" onclick="confirmSub()">Send to Customer</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+  let currentTab = 'orders';
+  let selectedSub = null;
+  let currentSubOrder = null;
+  let currentAcceptOrder = null;
+  let timers = {};
+
+  // Order timers
+  function startTimer(orderId, startSeconds) {
+    let seconds = startSeconds;
+    timers[orderId] = setInterval(() => {
+      seconds++;
+      const el = document.getElementById('timer-' + orderId);
+      if (!el) { clearInterval(timers[orderId]); return; }
+      const m = Math.floor(seconds / 60);
+      const s = seconds % 60;
+      el.textContent = `${m}:${s.toString().padStart(2,'0')}`;
+      if (seconds > 420) {
+        el.classList.add('urgent');
+        el.classList.remove('ok');
+      }
+    }, 1000);
+  }
+
+  startTimer('1001', 272);
+  startTimer('1002', 495);
+
+  function switchTab(tab) {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('view-' + tab).classList.add('active');
+    document.getElementById('tab-' + tab).classList.add('active');
+    currentTab = tab;
+  }
+
+  function showToast(msg, type = 'green') {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast ' + type + ' show';
+    setTimeout(() => t.classList.remove('show'), 2500);
+  }
+
+  function closeModal(id) {
+    document.getElementById(id).classList.remove('open');
+  }
+
+  function acceptOrder(orderId) {
+    currentAcceptOrder = orderId;
+    document.getElementById('modal-order-id').textContent = orderId;
+    // Populate items
+    const card = document.getElementById('order-' + orderId);
+    const rows = card.querySelectorAll('.order-item-row');
+    const list = document.getElementById('modal-items-list');
+    list.innerHTML = '';
+    rows.forEach(row => {
+      const name = row.querySelector('.item-name')?.textContent || '';
+      const qty = row.querySelector('.item-qty')?.textContent || '';
+      list.innerHTML += `<div class="modal-item-row"><span>${name}</span><span style="color:var(--text-dim)">${qty}</span></div>`;
+    });
+    document.getElementById('accept-modal').classList.add('open');
+  }
+
+  function confirmAccept() {
+    closeModal('accept-modal');
+    const card = document.getElementById('order-' + currentAcceptOrder);
+    if (card) {
+      card.querySelector('.status-badge').textContent = 'Preparing';
+      card.querySelector('.status-badge').className = 'status-badge status-prep';
+      card.classList.remove('new');
+      // Update actions
+      const actions = card.querySelector('.order-actions');
+      actions.innerHTML = `
+        <button class="order-action-btn green" onclick="markReady('${currentAcceptOrder}')">
+          <span class="btn-icon">✓</span>Ready
+        </button>
+        <button class="order-action-btn blue" onclick="showToast('Opening customer chat...','orange')">
+          <span class="btn-icon">💬</span>Message
+        </button>
+        <button class="order-action-btn orange" onclick="openSubModal('${currentAcceptOrder}')">
+          <span class="btn-icon">⇄</span>Sub Item
+        </button>`;
+    }
+    showToast('Order #DD-' + currentAcceptOrder + ' accepted', 'green');
+    updateStats(-1, 0);
+  }
+
+  function rejectOrder(orderId) {
+    const card = document.getElementById('order-' + orderId);
+    if (card) {
+      card.style.opacity = '0';
+      card.style.transform = 'translateX(-100%)';
+      card.style.transition = 'all 0.3s';
+      setTimeout(() => card.remove(), 300);
+    }
+    showToast('Order rejected', 'red');
+    updateOrdersBadge(-1);
+  }
+
+  function markReady(orderId) {
+    const card = document.getElementById('order-' + orderId);
+    if (card) {
+      card.querySelector('.status-badge').textContent = 'Ready for Pickup';
+      card.querySelector('.status-badge').className = 'status-badge status-ready';
+      card.classList.add('ready');
+      card.classList.remove('urgent');
+    }
+    showToast('Order marked ready 🎉', 'green');
+  }
+
+  function completeOrder(orderId) {
+    const card = document.getElementById('order-' + orderId);
+    if (card) {
+      card.style.opacity = '0';
+      card.style.transition = 'opacity 0.3s';
+      setTimeout(() => card.remove(), 300);
+    }
+    showToast('Order complete! 📦', 'green');
+    const doneEl = document.getElementById('stat-done');
+    doneEl.textContent = parseInt(doneEl.textContent) + 1;
+    updateOrdersBadge(-1);
+  }
+
+  function updateStats(activeDelta, pendingDelta) {
+    const a = document.getElementById('stat-active');
+    a.textContent = Math.max(0, parseInt(a.textContent) + activeDelta);
+  }
+
+  function updateOrdersBadge(delta) {
+    const badge = document.getElementById('orders-badge');
+    const val = Math.max(0, parseInt(badge.textContent) + delta);
+    badge.textContent = val;
+    if (val === 0) badge.style.display = 'none';
+  }
+
+  function openSubModal(orderId) {
+    currentSubOrder = orderId;
+    selectedSub = null;
+    document.querySelectorAll('.sub-option').forEach(o => o.classList.remove('selected'));
+    document.getElementById('sub-modal').classList.add('open');
+  }
+
+  function selectSub(el, name) {
+    document.querySelectorAll('.sub-option').forEach(o => o.classList.remove('selected'));
+    el.classList.add('selected');
+    selectedSub = name;
+  }
+
+  function confirmSub() {
+    if (!selectedSub) { showToast('Pick a substitute first', 'orange'); return; }
+    closeModal('sub-modal');
+    showToast('Sub sent to customer: ' + selectedSub, 'orange');
+  }
+
+  function msgCustomer(name, orderId) {
+    switchTab('messages');
+    showToast('Opening chat with ' + name, 'orange');
+  }
+
+  function msgDasher(orderId) {
+    switchTab('messages');
+    showToast('Opening dasher chat', 'orange');
+  }
+
+  function toggleItem(toggle) {
+    const isOn = toggle.classList.contains('on');
+    toggle.classList.toggle('on', !isOn);
+    toggle.classList.toggle('off', isOn);
+    const label = toggle.nextElementSibling;
+    label.textContent = isOn ? 'OUT' : 'IN';
+    const item = toggle.closest('.inv-item');
+    item.classList.toggle('out', isOn);
+
+    const name = item.querySelector('.inv-item-name').textContent;
+    const outEl = document.getElementById('stat-out');
+    if (isOn) {
+      outEl.textContent = parseInt(outEl.textContent) + 1;
+      showToast(name + ' marked OUT', 'red');
+    } else {
+      outEl.textContent = Math.max(0, parseInt(outEl.textContent) - 1);
+      showToast(name + ' back IN stock', 'green');
+    }
+  }
+
+  function filterInventory(query) {
+    const q = query.toLowerCase();
+    document.querySelectorAll('.inv-item').forEach(item => {
+      const name = item.dataset.name || '';
+      item.style.display = name.includes(q) ? '' : 'none';
+    });
+    document.querySelectorAll('.inv-category').forEach(cat => {
+      const anyVisible = [...cat.querySelectorAll('.inv-item')].some(i => i.style.display !== 'none');
+      cat.style.display = anyVisible ? '' : 'none';
+    });
+  }
+
+  function sendMsg(threadId) {
+    const input = document.getElementById('input-' + threadId);
+    const text = input.value.trim();
+    if (!text) return;
+    const thread = document.getElementById('thread-' + threadId);
+    thread.innerHTML += `<div class="msg-bubble store">${text}</div><div class="msg-timestamp">just now</div>`;
+    input.value = '';
+    thread.scrollTop = thread.scrollHeight;
+  }
+
+  function quickSend(threadId, text) {
+    const thread = document.getElementById('thread-' + threadId);
+    thread.innerHTML += `<div class="msg-bubble store">${text}</div><div class="msg-timestamp">just now</div>`;
+    thread.scrollTop = thread.scrollHeight;
+    showToast('Sent ✓', 'green');
+  }
+
+  // Close modals on overlay click
+  document.querySelectorAll('.modal-overlay').forEach(overlay => {
+    overlay.addEventListener('click', e => {
+      if (e.target === overlay) overlay.classList.remove('open');
+    });
+  });
+
+  // Enter key for message inputs
+  document.querySelectorAll('.msg-input').forEach(input => {
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Enter') {
+        const id = input.id.replace('input-', '');
+        sendMsg(id);
+      }
+    });
+  });
+</script>
+
+</body>
+</html>
